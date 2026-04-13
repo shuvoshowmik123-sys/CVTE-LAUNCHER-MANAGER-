@@ -1,36 +1,144 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Launcher Manager Activation Server
 
-## Getting Started
+Standalone Next.js activation control server for Launcher Manager. This app is designed for Vercel + Neon and avoids the fragile patterns from the earlier hotfix panel:
 
-First, run the development server:
+- no custom Express wrapper
+- no split frontend/backend boot process
+- no filesystem persistence in production
+- no ad hoc raw `pg` query layer as the primary backend
+
+## What it does
+
+- email/password admin login with secure cookie sessions
+- role-based access control with `SUPER_ADMIN` and `ADMIN`
+- first super admin bootstrapped from environment variables
+- device activation requests stored in Neon via Drizzle ORM
+- Ed25519-signed offline license tokens for Launcher Manager
+- admin approval, rejection, reissue, and revoke flows
+- audit logging for privileged actions
+- dark-mode operator console with a clean dashboard UI
+
+## Stack
+
+- Next.js 16 App Router
+- TypeScript
+- Tailwind CSS + local shadcn-style components
+- Neon Postgres
+- Drizzle ORM + Drizzle Kit
+- `@node-rs/argon2` for password hashing
+- `jose` + Node crypto for signed license handling
+
+## Roles
+
+### SUPER_ADMIN
+
+- create admin accounts
+- disable admins
+- reset admin passwords
+- manage security settings
+- approve and revoke activations
+- view all audit history
+
+### ADMIN
+
+- approve activation requests
+- revoke/reissue licenses
+- review device inventory
+- review audit history
+
+## Device activation flow
+
+1. Launcher Manager sends a normalized device fingerprint to `POST /api/device/register`
+2. Server creates a `PENDING` activation request
+3. Admin or super admin approves the request
+4. Server issues a signed offline license token
+5. Launcher Manager stores the token locally
+6. Launcher Manager verifies the token offline using the embedded public key
+
+The app is designed so activation failure blocks new protected actions rather than breaking an already working TV state.
+
+## Environment variables
+
+Copy `.env.example` and configure:
+
+- `APP_BASE_URL`
+- `DATABASE_URL`
+- `SESSION_SECRET`
+- `ACTIVATION_PRIVATE_KEY`
+- `ACTIVATION_PUBLIC_KEY_ID`
+- `FIRST_SUPER_ADMIN_NAME`
+- `FIRST_SUPER_ADMIN_EMAIL`
+- `FIRST_SUPER_ADMIN_PASSWORD`
+- `DEFAULT_ISSUER`
+- `TOKEN_VALIDITY_DAYS`
+- `TOKEN_RENEWAL_DAYS`
+- `LOGIN_RATE_LIMIT_WINDOW_MINUTES`
+- `LOGIN_RATE_LIMIT_MAX_ATTEMPTS`
+
+## Local setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
+pnpm db:generate
+pnpm lint
+pnpm build
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Database and migrations
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Drizzle schema lives in:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `src/lib/db/schema.ts`
 
-## Learn More
+Generated SQL migrations live in:
 
-To learn more about Next.js, take a look at the following resources:
+- `drizzle/`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Initial migration is already included so the repo is ready to push and apply in a fresh Neon database.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## API surface
 
-## Deploy on Vercel
+### Device routes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `POST /api/device/register`
+- `POST /api/device/refresh`
+- `POST /api/device/verify`
+- `GET /api/device/license/:id`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Admin routes
+
+- `POST /api/auth/login`
+- `POST /api/auth/logout`
+- `GET /api/auth/session`
+- `POST /api/auth/password`
+- `GET /api/admin/activations`
+- `POST /api/admin/activations/:requestId/approve`
+- `POST /api/admin/activations/:requestId/reject`
+- `POST /api/admin/licenses/:licenseId/revoke`
+- `POST /api/admin/licenses/:licenseId/reissue`
+- `GET /api/admin/licenses/export`
+- `GET /api/admin/admins`
+- `POST /api/admin/admins`
+- `POST /api/admin/admins/:userId/disable`
+- `POST /api/admin/admins/:userId/reset-password`
+- `GET /api/admin/audit`
+- `GET/PATCH /api/admin/settings`
+
+## Deployment notes
+
+- deploy this app directly to Vercel
+- connect Neon as the Postgres backend
+- set production environment variables in Vercel
+- keep the Ed25519 private key only in Vercel env vars
+- embed only the public verification key in Launcher Manager
+- keep production branch protection on the repo
+
+## Security notes
+
+- sessions are HttpOnly cookies
+- state-changing admin routes require CSRF validation
+- logins are rate-limited and locked after repeated failures
+- disabled admins lose all active sessions immediately
+- new admins are forced to rotate their temporary password
+- the private signing key never leaves the server
