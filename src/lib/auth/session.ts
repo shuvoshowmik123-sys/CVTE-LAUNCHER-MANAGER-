@@ -81,14 +81,14 @@ export async function invalidateUserSessions(userId: string) {
 }
 
 export async function getCurrentSession(): Promise<CurrentSession | null> {
-  await ensureSystemBootstrapped();
-
   const cookieStore = await cookies();
   const rawToken = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   const csrfToken = cookieStore.get(CSRF_COOKIE_NAME)?.value;
   if (!rawToken || !csrfToken) {
     return null;
   }
+
+  await ensureSystemBootstrapped();
 
   const [row] = await db
     .select({
