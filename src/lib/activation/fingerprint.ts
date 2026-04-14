@@ -3,9 +3,11 @@ import { createHash } from "node:crypto";
 import type { DeviceFingerprintPayload } from "@/lib/validators/schemas";
 
 export function normalizeFingerprintPayload(payload: DeviceFingerprintPayload) {
-  const macAddresses = [...new Set(payload.macAddresses.map((entry) => entry.toLowerCase()))].sort();
+  const primaryMac = payload.primaryMac.toLowerCase();
+  const macAddresses = [...new Set([primaryMac, ...payload.macAddresses.map((entry) => entry.toLowerCase())])].sort();
 
   return {
+    primaryMac,
     androidId: payload.androidId.trim(),
     buildFingerprint: payload.buildFingerprint.trim(),
     board: payload.board.trim(),
@@ -20,9 +22,22 @@ export function normalizeFingerprintPayload(payload: DeviceFingerprintPayload) {
   };
 }
 
+export function createMacHash(payload: DeviceFingerprintPayload) {
+  const normalized = normalizeFingerprintPayload(payload);
+  return createHash("sha256").update(normalized.primaryMac).digest("hex");
+}
+
 export function createDeviceHash(payload: DeviceFingerprintPayload) {
   const normalized = normalizeFingerprintPayload(payload);
-  const canonical = JSON.stringify(normalized);
+  const canonical = JSON.stringify({
+    primaryMac: normalized.primaryMac,
+    androidId: normalized.androidId,
+    buildFingerprint: normalized.buildFingerprint,
+    board: normalized.board,
+    manufacturer: normalized.manufacturer,
+    model: normalized.model,
+    packageName: normalized.packageName,
+  });
   return createHash("sha256").update(canonical).digest("hex");
 }
 
@@ -32,6 +47,7 @@ export function createDeviceSummary(payload: DeviceFingerprintPayload) {
     manufacturer: normalized.manufacturer,
     model: normalized.model,
     board: normalized.board,
+    primaryMac: normalized.primaryMac,
     packageName: normalized.packageName,
     appVersionName: normalized.appVersionName,
     appVersionCode: normalized.appVersionCode,

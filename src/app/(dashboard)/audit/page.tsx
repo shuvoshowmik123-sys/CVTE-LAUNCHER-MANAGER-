@@ -25,18 +25,30 @@ export default async function AuditPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {entries.map((entry) => (
-            <TableRow key={entry.id}>
-              <TableCell className="font-medium text-white">{entry.action}</TableCell>
-              <TableCell>{entry.actorEmail ?? "System"}</TableCell>
-              <TableCell>
-                <div>{entry.targetType}</div>
-                <div className="text-xs text-zinc-500">{entry.targetId ?? "—"}</div>
+          {entries.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={5} className="h-32 text-center text-zinc-500">
+                No audit entries recorded yet.
               </TableCell>
-              <TableCell>{entry.actorRole ? <Badge variant="muted">{entry.actorRole}</Badge> : "—"}</TableCell>
-              <TableCell>{formatDateTime(entry.createdAt)}</TableCell>
             </TableRow>
-          ))}
+          ) : (
+            entries.map((entry, index) => (
+              <TableRow
+                key={entry.id}
+                className="animate-row-enter"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                <TableCell className="font-medium text-white">{entry.action}</TableCell>
+                <TableCell>{entry.actorEmail ?? "System"}</TableCell>
+                <TableCell>
+                  <div>{entry.targetType}</div>
+                  <div className="text-xs text-zinc-500">{entry.targetId ?? "—"}</div>
+                </TableCell>
+                <TableCell>{entry.actorRole ? <Badge variant="muted">{entry.actorRole}</Badge> : "—"}</TableCell>
+                <TableCell>{formatDateTime(entry.createdAt)}</TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
     </PageShell>

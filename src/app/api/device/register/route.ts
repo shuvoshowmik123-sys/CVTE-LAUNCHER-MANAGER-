@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 export async function POST(request: Request) {
   try {
     const payload = activationRequestPayloadSchema.parse(await request.json());
-    const result = await submitActivationRequest(payload.fingerprint);
+    const result = await submitActivationRequest(payload.fingerprint, payload.requestSignature);
     return Response.json(result);
   } catch (error) {
     const httpError = toHttpError(error);

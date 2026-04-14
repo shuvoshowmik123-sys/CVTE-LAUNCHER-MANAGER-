@@ -1,6 +1,7 @@
 "use client";
 
 import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -15,10 +16,17 @@ export function DialogOverlay({
   ...props
 }: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>) {
   return (
-    <DialogPrimitive.Overlay
-      className={cn("fixed inset-0 z-50 bg-black/70 backdrop-blur-sm", className)}
-      {...props}
-    />
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+    >
+      <DialogPrimitive.Overlay
+        className={cn("fixed inset-0 z-50 bg-black/70 backdrop-blur-sm", className)}
+        {...props}
+      />
+    </motion.div>
   );
 }
 
@@ -30,19 +38,26 @@ export function DialogContent({
   return (
     <DialogPortal>
       <DialogOverlay />
-      <DialogPrimitive.Content
-        className={cn(
-          "fixed left-1/2 top-1/2 z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 rounded-3xl border border-white/10 bg-zinc-950 p-6 shadow-2xl",
-          className,
-        )}
-        {...props}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 8 }}
+        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
       >
-        {children}
-        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-full p-1 text-zinc-500 transition hover:bg-white/10 hover:text-white">
-          <X className="h-4 w-4" />
-          <span className="sr-only">Close</span>
-        </DialogPrimitive.Close>
-      </DialogPrimitive.Content>
+        <DialogPrimitive.Content
+          className={cn(
+            "fixed left-1/2 top-1/2 z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 rounded-3xl border border-white/10 bg-zinc-950 p-6 shadow-2xl",
+            className,
+          )}
+          {...props}
+        >
+          {children}
+          <DialogPrimitive.Close className="absolute right-4 top-4 rounded-full p-1 text-zinc-500 transition hover:bg-white/10 hover:text-white">
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </DialogPrimitive.Close>
+        </DialogPrimitive.Content>
+      </motion.div>
     </DialogPortal>
   );
 }

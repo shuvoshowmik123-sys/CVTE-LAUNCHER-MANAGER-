@@ -1,11 +1,11 @@
 import { redirect } from "next/navigation";
 
-import { DashboardChrome } from "@/components/dashboard/dashboard-chrome";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { getCurrentSession } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 
-export default async function DashboardLayout({
+export default async function Layout({
   children,
 }: {
   children: React.ReactNode;
@@ -16,7 +16,7 @@ export default async function DashboardLayout({
   }
 
   return (
-    <DashboardChrome
+    <DashboardLayout
       session={{
         name: session.name,
         email: session.email,
@@ -26,6 +26,6 @@ export default async function DashboardLayout({
       }}
     >
       {children}
-    </DashboardChrome>
+    </DashboardLayout>
   );
 }

@@ -1,4 +1,4 @@
-import { BarChart3, Clock4, ShieldCheck, Users } from "lucide-react";
+import { AlertTriangle, BarChart3, Clock4, Cpu, ShieldCheck, Users } from "lucide-react";
 
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { PageShell } from "@/components/dashboard/page-shell";
@@ -17,10 +17,12 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <MetricCard title="Pending activations" value={data.metrics.pendingActivations} icon={Clock4} />
-        <MetricCard title="Active licenses" value={data.metrics.activeLicenses} icon={ShieldCheck} />
-        <MetricCard title="Revoked licenses" value={data.metrics.revokedLicenses} icon={BarChart3} />
-        <MetricCard title="Operator accounts" value={data.metrics.adminUsers} icon={Users} />
+        <MetricCard title="Pending activations" value={data.metrics.pendingActivations} icon={<Clock4 className="h-5 w-5" />} delay={0} />
+        <MetricCard title="Active licenses" value={data.metrics.activeLicenses} icon={<ShieldCheck className="h-5 w-5" />} delay={0.05} />
+        <MetricCard title="Revoked licenses" value={data.metrics.revokedLicenses} icon={<BarChart3 className="h-5 w-5" />} delay={0.1} />
+        <MetricCard title="Tracked devices" value={data.metrics.trackedDevices} icon={<Cpu className="h-5 w-5" />} delay={0.15} />
+        <MetricCard title="Open anomalies" value={data.metrics.openAnomalies} icon={<AlertTriangle className="h-5 w-5" />} delay={0.2} />
+        <MetricCard title="Operator accounts" value={data.metrics.adminUsers} icon={<Users className="h-5 w-5" />} delay={0.25} />
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
@@ -39,8 +41,8 @@ export default async function DashboardPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.recentAudit.map((entry) => (
-                  <TableRow key={entry.id}>
+                {data.recentAudit.map((entry, index) => (
+                  <TableRow key={entry.id} className="animate-row-enter" style={{ animationDelay: `${index * 50}ms` }}>
                     <TableCell className="font-medium text-white">{entry.action}</TableCell>
                     <TableCell>{entry.actorEmail ?? "System"}</TableCell>
                     <TableCell>{entry.targetType}</TableCell>

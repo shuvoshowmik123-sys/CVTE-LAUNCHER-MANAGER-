@@ -35,42 +35,54 @@ export default async function PendingActivationsPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {requests.map((request) => {
-            const summary = request.deviceSummary as Record<string, string | undefined>;
-            return (
-              <TableRow key={request.id}>
-                <TableCell>
-                  <div className="font-medium text-white">{request.customerLabel ?? summary.model ?? "Unlabeled device"}</div>
-                  <div className="text-xs text-zinc-400">
-                    {summary.manufacturer ?? "Unknown"} · {summary.board ?? "Unknown board"}
-                  </div>
-                </TableCell>
-                <TableCell className="font-mono text-xs">{request.deviceHash}</TableCell>
-                <TableCell>{request.packageName}</TableCell>
-                <TableCell>{formatDateTime(request.createdAt)}</TableCell>
-                <TableCell>
-                  <Badge variant="warning">{request.status}</Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <ActionButton
-                      url={`/api/admin/activations/${request.id}/approve`}
-                      csrfToken={session.csrfToken}
-                      body={{ features: ["activation", "offline-license"] }}
-                      label="Approve"
-                    />
-                    <ActionButton
-                      url={`/api/admin/activations/${request.id}/reject`}
-                      csrfToken={session.csrfToken}
-                      body={{ note: "Activation rejected by operator" }}
-                      label="Reject"
-                      variant="outline"
-                    />
-                  </div>
-                </TableCell>
-              </TableRow>
-            );
-          })}
+          {requests.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={6} className="h-32 text-center text-zinc-500">
+                No pending activation requests.
+              </TableCell>
+            </TableRow>
+          ) : (
+            requests.map((request, index) => {
+              const summary = request.deviceSummary as Record<string, string | undefined>;
+              return (
+                <TableRow
+                  key={request.id}
+                  className="animate-row-enter"
+                  style={{ animationDelay: `${index * 60}ms` }}
+                >
+                  <TableCell>
+                    <div className="font-medium text-white">{request.customerLabel ?? summary.model ?? "Unlabeled device"}</div>
+                    <div className="text-xs text-zinc-400">
+                      {summary.manufacturer ?? "Unknown"} · {summary.board ?? "Unknown board"}
+                    </div>
+                  </TableCell>
+                  <TableCell className="font-mono text-xs">{request.deviceHash}</TableCell>
+                  <TableCell>{request.packageName}</TableCell>
+                  <TableCell>{formatDateTime(request.createdAt)}</TableCell>
+                  <TableCell>
+                    <Badge variant="warning">{request.status}</Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <ActionButton
+                        url={`/api/admin/activations/${request.id}/approve`}
+                        csrfToken={session.csrfToken}
+                        body={{ features: ["activation", "offline-license"] }}
+                        label="Approve"
+                      />
+                      <ActionButton
+                        url={`/api/admin/activations/${request.id}/reject`}
+                        csrfToken={session.csrfToken}
+                        body={{ note: "Activation rejected by operator" }}
+                        label="Reject"
+                        variant="outline"
+                      />
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })
+          )}
         </TableBody>
       </Table>
     </PageShell>

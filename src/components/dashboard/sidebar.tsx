@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ShieldCheck, KeySquare, LayoutDashboard, ScrollText, Settings2, Users } from "lucide-react";
+import { AlertTriangle, Cpu, ShieldCheck, KeySquare, LayoutDashboard, ScrollText, Settings2, Users } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -9,8 +9,10 @@ import { ROLE_ROUTES } from "@/lib/auth/permissions";
 const items = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/activations/pending", label: "Pending", icon: KeySquare },
+  { href: "/devices/registry", label: "Registry", icon: Cpu },
   { href: "/devices/approved", label: "Approved", icon: ShieldCheck },
   { href: "/devices/revoked", label: "Revoked", icon: ShieldCheck },
+  { href: "/anomalies", label: "Anomalies", icon: AlertTriangle },
   { href: "/admins", label: "Admins", icon: Users, superOnly: true },
   { href: "/audit", label: "Audit", icon: ScrollText },
   { href: "/settings", label: "Settings", icon: Settings2, superOnly: true },

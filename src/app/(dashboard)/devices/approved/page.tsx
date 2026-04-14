@@ -39,41 +39,53 @@ export default async function ApprovedDevicesPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {licenses.map((license) => {
-            const summary = license.deviceSummary as Record<string, string | undefined>;
-            return (
-              <TableRow key={license.id}>
-                <TableCell>
-                  <div className="font-medium text-white">{license.customerLabel ?? summary.model ?? "Approved device"}</div>
-                  <div className="text-xs text-zinc-400">{license.deviceHash}</div>
-                </TableCell>
-                <TableCell>{license.packageName}</TableCell>
-                <TableCell>{formatDateTime(license.issuedAt)}</TableCell>
-                <TableCell>{formatDateTime(license.expiresAt)}</TableCell>
-                <TableCell>
-                  <Badge>{license.status}</Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <ActionButton
-                      url={`/api/admin/licenses/${license.id}/reissue`}
-                      csrfToken={session.csrfToken}
-                      body={{ note: "Manual reissue from operator console" }}
-                      label="Reissue"
-                      variant="secondary"
-                    />
-                    <ActionButton
-                      url={`/api/admin/licenses/${license.id}/revoke`}
-                      csrfToken={session.csrfToken}
-                      body={{ note: "Revoked from operator console" }}
-                      label="Revoke"
-                      variant="destructive"
-                    />
-                  </div>
-                </TableCell>
-              </TableRow>
-            );
-          })}
+          {licenses.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={6} className="h-32 text-center text-zinc-500">
+                No active device licenses.
+              </TableCell>
+            </TableRow>
+          ) : (
+            licenses.map((license, index) => {
+              const summary = license.deviceSummary as Record<string, string | undefined>;
+              return (
+                <TableRow
+                  key={license.id}
+                  className="animate-row-enter"
+                  style={{ animationDelay: `${index * 60}ms` }}
+                >
+                  <TableCell>
+                    <div className="font-medium text-white">{license.customerLabel ?? summary.model ?? "Approved device"}</div>
+                    <div className="text-xs text-zinc-400">{license.deviceHash}</div>
+                  </TableCell>
+                  <TableCell>{license.packageName}</TableCell>
+                  <TableCell>{formatDateTime(license.issuedAt)}</TableCell>
+                  <TableCell>{formatDateTime(license.expiresAt)}</TableCell>
+                  <TableCell>
+                    <Badge>{license.status}</Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <ActionButton
+                        url={`/api/admin/licenses/${license.id}/reissue`}
+                        csrfToken={session.csrfToken}
+                        body={{ note: "Manual reissue from operator console" }}
+                        label="Reissue"
+                        variant="secondary"
+                      />
+                      <ActionButton
+                        url={`/api/admin/licenses/${license.id}/revoke`}
+                        csrfToken={session.csrfToken}
+                        body={{ note: "Revoked from operator console" }}
+                        label="Revoke"
+                        variant="destructive"
+                      />
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })
+          )}
         </TableBody>
       </Table>
     </PageShell>

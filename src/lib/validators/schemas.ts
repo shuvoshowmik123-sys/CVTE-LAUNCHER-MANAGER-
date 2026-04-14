@@ -9,6 +9,9 @@ export const activationRequestStatusSchema = z.enum([
   "REVOKED",
 ]);
 export const licenseStatusSchema = z.enum(["ACTIVE", "EXPIRED", "REVOKED"]);
+export const deviceRegistryStatusSchema = z.enum(["PENDING", "ACTIVE", "INACTIVE", "REVOKED", "BLOCKED"]);
+export const anomalySeveritySchema = z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]);
+export const anomalyStatusSchema = z.enum(["OPEN", "RESOLVED"]);
 
 const macAddressSchema = z
   .string()
@@ -17,6 +20,7 @@ const macAddressSchema = z
   .transform((value) => value.toLowerCase().replace(/-/g, ":"));
 
 export const deviceFingerprintPayloadSchema = z.object({
+  primaryMac: macAddressSchema,
   androidId: z.string().trim().min(1),
   buildFingerprint: z.string().trim().min(1),
   board: z.string().trim().min(1),
@@ -32,12 +36,23 @@ export const deviceFingerprintPayloadSchema = z.object({
 
 export const activationRequestPayloadSchema = z.object({
   fingerprint: deviceFingerprintPayloadSchema,
+  requestSignature: z.object({
+    version: z.literal(1),
+    keyAlgorithm: z.literal("ES256"),
+    publicKeyPem: z.string().trim().min(1),
+    nonce: z.coerce.number().int().positive(),
+    timestamp: z.string().datetime(),
+    signature: z.string().trim().min(1),
+  }),
 });
 
 export const signedLicenseTokenSchema = z.object({
-  ver: z.literal(1),
+  ver: z.literal(2),
   licenseId: z.string().min(1),
+  keyId: z.string().min(1),
+  nonce: z.coerce.number().int().positive(),
   product: z.literal("launcher-manager"),
+  macHash: z.string().min(1),
   deviceHash: z.string().min(1),
   packageName: z.string().min(1),
   features: z.array(z.string().min(1)),
@@ -51,11 +66,27 @@ export const signedLicenseTokenSchema = z.object({
 export const licenseRefreshPayloadSchema = z.object({
   fingerprint: deviceFingerprintPayloadSchema,
   license: signedLicenseTokenSchema,
+  requestSignature: z.object({
+    version: z.literal(1),
+    keyAlgorithm: z.literal("ES256"),
+    publicKeyPem: z.string().trim().min(1),
+    nonce: z.coerce.number().int().positive(),
+    timestamp: z.string().datetime(),
+    signature: z.string().trim().min(1),
+  }),
 });
 
 export const licenseVerifyPayloadSchema = z.object({
   fingerprint: deviceFingerprintPayloadSchema,
   license: signedLicenseTokenSchema,
+  requestSignature: z.object({
+    version: z.literal(1),
+    keyAlgorithm: z.literal("ES256"),
+    publicKeyPem: z.string().trim().min(1),
+    nonce: z.coerce.number().int().positive(),
+    timestamp: z.string().datetime(),
+    signature: z.string().trim().min(1),
+  }),
 });
 
 export const adminLoginPayloadSchema = z.object({
@@ -71,6 +102,14 @@ export const adminCreatePayloadSchema = z.object({
 
 export const adminStatusUpdatePayloadSchema = z.object({
   reason: z.string().trim().max(240).optional(),
+});
+
+export const deviceRegistryActionPayloadSchema = z.object({
+  reason: z.string().trim().min(3).max(240),
+});
+
+export const deviceNotePayloadSchema = z.object({
+  note: z.string().trim().min(3).max(2000),
 });
 
 export const activationDecisionPayloadSchema = z.object({
@@ -90,9 +129,13 @@ export type UserRole = z.infer<typeof userRoleSchema>;
 export type UserStatus = z.infer<typeof userStatusSchema>;
 export type ActivationRequestStatus = z.infer<typeof activationRequestStatusSchema>;
 export type LicenseStatus = z.infer<typeof licenseStatusSchema>;
+export type DeviceRegistryStatus = z.infer<typeof deviceRegistryStatusSchema>;
+export type AnomalySeverity = z.infer<typeof anomalySeveritySchema>;
+export type AnomalyStatus = z.infer<typeof anomalyStatusSchema>;
 export type DeviceFingerprintPayload = z.infer<typeof deviceFingerprintPayloadSchema>;
 export type ActivationRequestPayload = z.infer<typeof activationRequestPayloadSchema>;
 export type SignedLicenseToken = z.infer<typeof signedLicenseTokenSchema>;
+export type DeviceRequestSignature = z.infer<typeof activationRequestPayloadSchema>["requestSignature"];
 export type AuditLogEntry = {
   id: string;
   actorUserId: string | null;
@@ -106,3 +149,5 @@ export type AuditLogEntry = {
 };
 export type AdminCreatePayload = z.infer<typeof adminCreatePayloadSchema>;
 export type AdminStatusUpdatePayload = z.infer<typeof adminStatusUpdatePayloadSchema>;
+export type DeviceRegistryActionPayload = z.infer<typeof deviceRegistryActionPayloadSchema>;
+export type DeviceNotePayload = z.infer<typeof deviceNotePayloadSchema>;

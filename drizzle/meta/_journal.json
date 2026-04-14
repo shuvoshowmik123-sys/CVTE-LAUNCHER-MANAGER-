@@ -8,6 +8,20 @@
       "when": 1776080428095,
       "tag": "0000_warm_dragon_lord",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1776153232571,
+      "tag": "0001_curved_supernaut",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1776160755359,
+      "tag": "0002_free_gideon",
+      "breakpoints": true
     }
   ]
 }

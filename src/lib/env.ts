@@ -6,6 +6,7 @@ const envSchema = z.object({
   SESSION_SECRET: z.string().min(32),
   ACTIVATION_PRIVATE_KEY: z.string().min(1),
   ACTIVATION_PUBLIC_KEY_ID: z.string().min(1),
+  ACTIVATION_LEGACY_PUBLIC_KEYS_JSON: z.string().optional().default(""),
   FIRST_SUPER_ADMIN_NAME: z.string().min(1),
   FIRST_SUPER_ADMIN_EMAIL: z.string().email(),
   FIRST_SUPER_ADMIN_PASSWORD: z.string().min(12),

@@ -4,13 +4,15 @@ export const ROLE_ROUTES: Record<UserRole, string[]> = {
   SUPER_ADMIN: [
     "/dashboard",
     "/activations/pending",
+    "/devices/registry",
     "/devices/approved",
     "/devices/revoked",
+    "/anomalies",
     "/admins",
     "/audit",
     "/settings",
   ],
-  ADMIN: ["/dashboard", "/activations/pending", "/devices/approved", "/devices/revoked"],
+  ADMIN: ["/dashboard", "/activations/pending", "/devices/registry", "/devices/approved", "/devices/revoked", "/anomalies"],
 };
 
 export function canManageAdmins(role?: UserRole | null) {

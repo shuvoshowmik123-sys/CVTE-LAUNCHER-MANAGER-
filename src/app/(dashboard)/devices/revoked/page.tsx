@@ -33,23 +33,35 @@ export default async function RevokedDevicesPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {licenses.map((license) => {
-            const summary = license.deviceSummary as Record<string, string | undefined>;
-            return (
-              <TableRow key={license.id}>
-                <TableCell>
-                  <div className="font-medium text-white">{license.customerLabel ?? summary.model ?? "Revoked device"}</div>
-                  <div className="text-xs text-zinc-400">{license.deviceHash}</div>
-                </TableCell>
-                <TableCell>{license.packageName}</TableCell>
-                <TableCell>{license.revokedAt ? formatDateTime(license.revokedAt) : "—"}</TableCell>
-                <TableCell>{formatDateTime(license.expiresAt)}</TableCell>
-                <TableCell>
-                  <Badge variant="destructive">{license.status}</Badge>
-                </TableCell>
-              </TableRow>
-            );
-          })}
+          {licenses.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={5} className="h-32 text-center text-zinc-500">
+                No revoked licenses.
+              </TableCell>
+            </TableRow>
+          ) : (
+            licenses.map((license, index) => {
+              const summary = license.deviceSummary as Record<string, string | undefined>;
+              return (
+                <TableRow
+                  key={license.id}
+                  className="animate-row-enter"
+                  style={{ animationDelay: `${index * 60}ms` }}
+                >
+                  <TableCell>
+                    <div className="font-medium text-white">{license.customerLabel ?? summary.model ?? "Revoked device"}</div>
+                    <div className="text-xs text-zinc-400">{license.deviceHash}</div>
+                  </TableCell>
+                  <TableCell>{license.packageName}</TableCell>
+                  <TableCell>{license.revokedAt ? formatDateTime(license.revokedAt) : "—"}</TableCell>
+                  <TableCell>{formatDateTime(license.expiresAt)}</TableCell>
+                  <TableCell>
+                    <Badge variant="destructive">{license.status}</Badge>
+                  </TableCell>
+                </TableRow>
+              );
+            })
+          )}
         </TableBody>
       </Table>
     </PageShell>
