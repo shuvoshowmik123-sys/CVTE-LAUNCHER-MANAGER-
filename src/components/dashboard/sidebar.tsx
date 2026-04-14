@@ -54,8 +54,10 @@ export function Sidebar({
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center justify-between rounded-2xl px-4 py-3 text-sm transition-colors",
-                active ? "bg-white text-black" : "text-zinc-300 hover:bg-white/5 hover:text-white",
+                "flex items-center justify-between rounded-2xl border px-4 py-3 text-sm transition-colors",
+                active
+                  ? "border-emerald-300/25 bg-emerald-400/12 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                  : "border-transparent text-zinc-300 hover:border-white/10 hover:bg-white/5 hover:text-white",
               )}
             >
               <span className="flex items-center gap-3">
@@ -63,7 +65,7 @@ export function Sidebar({
                 {item.label}
               </span>
               {item.superOnly ? (
-                <Badge variant={active ? "muted" : "warning"} className="border-none">
+                <Badge variant={active ? "default" : "warning"} className="border-none">
                   Super
                 </Badge>
               ) : null}

@@ -12,6 +12,7 @@ export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   const data = await getDashboardMetrics();
+  const isSuperAdmin = data.currentUser.role === "SUPER_ADMIN";
 
   return (
     <div className="space-y-6">
@@ -23,31 +24,71 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-        <PageShell
-          title="Recent audit activity"
-          description="Every sensitive action stays visible so approvals and revocations can be traced later."
-        >
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Action</TableHead>
-                <TableHead>Actor</TableHead>
-                <TableHead>Target</TableHead>
-                <TableHead>Time</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.recentAudit.map((entry) => (
-                <TableRow key={entry.id}>
-                  <TableCell className="font-medium text-white">{entry.action}</TableCell>
-                  <TableCell>{entry.actorEmail ?? "System"}</TableCell>
-                  <TableCell>{entry.targetType}</TableCell>
-                  <TableCell>{formatDateTime(entry.createdAt)}</TableCell>
+        {isSuperAdmin ? (
+          <PageShell
+            title="Recent audit activity"
+            description="Only super admins can review sensitive operator activity, access changes, and security actions."
+          >
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Action</TableHead>
+                  <TableHead>Actor</TableHead>
+                  <TableHead>Target</TableHead>
+                  <TableHead>Time</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </PageShell>
+              </TableHeader>
+              <TableBody>
+                {data.recentAudit.map((entry) => (
+                  <TableRow key={entry.id}>
+                    <TableCell className="font-medium text-white">{entry.action}</TableCell>
+                    <TableCell>{entry.actorEmail ?? "System"}</TableCell>
+                    <TableCell>{entry.targetType}</TableCell>
+                    <TableCell>{formatDateTime(entry.createdAt)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </PageShell>
+        ) : (
+          <PageShell
+            title="Client-safe overview"
+            description="This view keeps the dashboard useful without exposing internal operator login or audit activity."
+          >
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <div className="text-xs uppercase tracking-[0.18em] text-zinc-500">Pending queue</div>
+                <div className="mt-2 text-3xl font-semibold text-white">{data.metrics.pendingActivations}</div>
+                <p className="mt-2 text-sm text-zinc-400">
+                  Devices waiting for approval or manual review.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <div className="text-xs uppercase tracking-[0.18em] text-zinc-500">Active licenses</div>
+                <div className="mt-2 text-3xl font-semibold text-white">{data.metrics.activeLicenses}</div>
+                <p className="mt-2 text-sm text-zinc-400">
+                  Devices currently holding an active offline certificate.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <div className="text-xs uppercase tracking-[0.18em] text-zinc-500">Revoked licenses</div>
+                <div className="mt-2 text-3xl font-semibold text-white">{data.metrics.revokedLicenses}</div>
+                <p className="mt-2 text-sm text-zinc-400">
+                  Licenses that were intentionally disabled by an operator.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <div className="text-xs uppercase tracking-[0.18em] text-zinc-500">Approval mode</div>
+                <div className="mt-2 text-lg font-semibold text-white">
+                  {data.settings.allowAdminApprovals ? "Admin approvals enabled" : "Super admin approvals only"}
+                </div>
+                <p className="mt-2 text-sm text-zinc-400">
+                  Current policy applied to device approval requests.
+                </p>
+              </div>
+            </div>
+          </PageShell>
+        )}
 
         <Card className="glass-panel border-white/10 bg-white/5">
           <CardHeader>

@@ -10,7 +10,7 @@ export const ROLE_ROUTES: Record<UserRole, string[]> = {
     "/audit",
     "/settings",
   ],
-  ADMIN: ["/dashboard", "/activations/pending", "/devices/approved", "/devices/revoked", "/audit"],
+  ADMIN: ["/dashboard", "/activations/pending", "/devices/approved", "/devices/revoked"],
 };
 
 export function canManageAdmins(role?: UserRole | null) {
